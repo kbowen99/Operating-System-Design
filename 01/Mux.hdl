@@ -1,0 +1,16 @@
+/**
+ * Multiplexor. Multiplexes all the things
+ */
+
+CHIP Mux {
+
+    IN  a,b,sel;
+    OUT out;
+	
+	PARTS:
+	Not(in=sel,out=NOTsel);
+	Nand(a=sel,b=b,out=Aand);
+	Nand(a=NOTsel,b=a,out=Band);
+	Nand(a=Aand,b=Band,out=out);
+	
+}

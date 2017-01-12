@@ -1,0 +1,16 @@
+/**
+ * Xor Gate; True if either
+ */
+
+CHIP Xor {
+
+    IN  a,b;
+    OUT out;
+	
+	PARTS:
+    Not(in=b,out=NOTb);
+	Not(in=a,out=NOTa);
+	And(a=a,b=NOTb,out=aANDnb);
+	And(a=NOTa,b=b,out=naANDb);
+	Or(a=aANDnb,b=naANDb,out=out);
+}

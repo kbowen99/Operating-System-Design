@@ -1,0 +1,15 @@
+
+
+/**
+ * And Gate; True if Both True
+ */
+
+CHIP And {
+
+    IN  a,b;
+    OUT out;
+	
+	PARTS:
+    Nand(a=a,b=b,out=NotAnd);
+	Not(in=NotAnd,out=out);
+}

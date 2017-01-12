@@ -1,0 +1,16 @@
+
+
+/**
+ * Or Gate; True if either
+ */
+
+CHIP Or {
+
+    IN  a,b;
+    OUT out;
+	
+	PARTS:
+    Nand(a=a,b=a,out=NANDA);
+	Nand(a=b,b=b,out=NANDB);
+	Nand(a=NANDA,b=NANDB,out=out);
+}
