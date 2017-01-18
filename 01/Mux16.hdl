@@ -12,6 +12,10 @@ CHIP Mux16 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+	InternalShort16(in=sel,out=SEL16);
+	Not16(in=SEL16,out=NOTsel);
+	Nand16(a=SEL16,b=b,out=Aand);
+	Nand16(a=NOTsel,b=a,out=Band);
+	Nand16(a=Aand,b=Band,out=out);
 }
 
