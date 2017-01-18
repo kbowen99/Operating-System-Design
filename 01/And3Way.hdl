@@ -1,0 +1,15 @@
+
+
+/**
+ * And Gate; True if Both True
+ */
+
+CHIP And3Way {
+
+    IN  a,b,c;
+    OUT out;
+	
+	PARTS:
+    And(a=a,b=b,out=AB);
+	And(a=AB,b=c,out=out);
+}
