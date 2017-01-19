@@ -17,5 +17,21 @@ CHIP DMux8Way {
     OUT a, b, c, d, e, f, g, h;
 
     PARTS:
-    // Put your code here:
+	//Split Input into nice pins
+	Diode(in=sel[0],out=sA);
+	Diode(in=sel[1],out=sB);
+	Diode(in=sel[2],out=sC);
+	//Get "Not" Vals
+	Not(in=sA,out=NsA);
+	Not(in=sB,out=NsB);
+	Not(in=sC,out=NsC);
+	//Whole Bunch 'O Fun
+	And4Way(a=in,b=NsA,c=NsB,d=NsC,out=a);
+	And4Way(a=in,b=sA,c=NsB,d=NsC,out=b);
+	And4Way(a=in,b=NsA,c=sB,d=NsC,out=c);
+	And4Way(a=in,b=sA,c=sB,d=NsC,out=d);
+	And4Way(a=in,b=NsA,c=NsB,d=sC,out=e);
+	And4Way(a=in,b=sA,c=NsB,d=sC,out=f);
+	And4Way(a=in,b=NsA,c=sB,d=sC,out=g);
+	And4Way(a=in,b=sA,c=sB,d=sC,out=h);
 }
