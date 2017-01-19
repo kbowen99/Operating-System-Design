@@ -18,5 +18,21 @@ CHIP Mux8Way16 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+	InternalShort16(in=sel[0],out=selA);
+	InternalShort16(in=sel[1],out=selB);
+	InternalShort16(in=sel[2],out=selC);
+    Not16(in=selA,out=NOTselA);//A=S0
+	Not16(in=selB,out=NOTselB);//B=S1
+	Not16(in=selC,out=NOTselC);//C=S2
+	And4Way16(a=a,b=NOTselA,c=NOTselB,d=NOTselC,out=AND0);
+	And4Way16(a=b,b=selA,c=NOTselB,d=NOTselC,out=AND1);
+	And4Way16(a=c,b=NOTselA,c=selB,d=NOTselC,out=AND2);
+	And4Way16(a=d,b=selA,c=selB,d=NOTselC,out=AND3);
+	And4Way16(a=e,b=NOTselA,c=NOTselB,d=selC,out=AND4);
+	And4Way16(a=f,b=selA,c=NOTselB,d=selC,out=AND5);
+	And4Way16(a=g,b=NOTselA,c=selB,d=selC,out=AND6);
+	And4Way16(a=h,b=selA,c=selB,d=selC,out=AND7);
+	Or4Way16(a=AND0,b=AND1,c=AND2,d=AND3,out=OR1);
+	Or4Way16(a=AND4,b=AND5,c=AND6,d=AND7,out=OR2);
+	Or16(a=OR1,b=OR2,out=out);
 }

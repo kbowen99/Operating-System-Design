@@ -1,0 +1,16 @@
+
+
+/**
+ * And Gate; True if Both True
+ */
+
+CHIP And4Way {
+
+    IN  a,b,c,d;
+    OUT out;
+	
+	PARTS:
+    And(a=a,b=b,out=AB);
+	And(a=c,b=d,out=BC);
+	And(a=AB,b=BC,out=out);
+}
