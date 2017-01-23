@@ -31,11 +31,11 @@
   
 CHIP ALU {
     IN  
-        x[16], y[16],  // 16-bit inputs        
-        zx, // zero the x input?
-        nx, // negate the x input?
-        zy, // zero the y input?
-        ny, // negate the y input?
+        x[16], y[16],  // 16-bit inputs --
+        zx, // zero the x input? --
+        nx, // negate the x input? --
+        zy, // zero the y input? --
+        ny, // negate the y input? --
         f,  // compute  out = x + y (if 1) or out = x & y (if 0)
         no; // negate the out output?
 
@@ -45,5 +45,34 @@ CHIP ALU {
         ng; // 1 if (out<0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+	//Opposite Num
+	Not16(in=x,out=NOTx);
+	Not16(in=y,out=NOTy);
+	
+	//If Invert; if Zero
+	Mux4Way16(a=x,b=NOTx,c=false,d=false,sel[0]=zx,sel[1]=nx,out=FX);
+	Mux4Way16(a=y,b=NOTy,c=false,d=false,sel[0]=zy,sel[1]=ny,out=FY);
+	
+	//Do Maths
+	Add16(a=FX,b=FY,out=ADDFXY);
+	And16(a=FX,b=FY,out=ANDFXY);
+	
+	//"F" Switch
+	Mux16(a=ANDFXY,b=ANDFXY,sel=f,out=fFXY);
+	
+	//Negate? Output
+	Not16(in=fFXY,out=NOTf);
+	Mux16(a=fFXY,b=NOTf,sel=no,out=OUTPUT);
+	
+	//Or 16 Way isnt a thing (by default)
+	Or8Way(in=OUTPUT[0..7], out=OR1);
+    Or8Way(in=OUTPUT[8..15], out=OR2);
+    Or(a=OR1, b=OR2, out=OR);
+	Not(in=OR,out=zr);
+	
+	//if Neg
+	And(a=OUTPUT[15],b=true,out=ng);
+	
+	//Actually OUTPUT
+	And16(a=OUTPUT,b=true,out=out);
 }
