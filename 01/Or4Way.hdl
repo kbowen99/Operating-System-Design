@@ -4,16 +4,15 @@
 // File name: projects/01/Or8Way.hdl
 
 /**
- * 8-way or gate: out = in[0] or in[1] or ... or in[7].
+ * 4-way or gate: out = in[0] or in[1] or ... or in[7].
  */
 
-CHIP Or8Way {
-    IN in[8];
+CHIP Or4Way {
+    IN a,b,c,d;
     OUT out;
 
-	//ITS A TREE! (7 Lines. Efficent.)
     PARTS:
-	Or4Way(a=in[0],b=in[1],c=in[2],d=in[3],out=OR1);
-	Or4Way(a=in[4],b=in[5],c=in[6],d=in[7],out=OR2);
+    Or(a=a,b=b,out=OR1);
+	Or(a=c,b=d,out=OR2);
 	Or(a=OR1,b=OR2,out=out);
 }

@@ -1,0 +1,15 @@
+
+
+/**
+ * Diode; Passes Value to internal pin; Makes Naming Easier
+ */
+
+CHIP Diode {
+
+    IN  in;
+    OUT out;
+	
+	PARTS:
+    Not(in=in,out=NOTin);
+	Not(in=NOTin,out=out);
+}

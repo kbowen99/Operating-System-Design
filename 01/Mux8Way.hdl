@@ -1,0 +1,29 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/DMux4Way.hdl
+
+/**
+ * 8-way multiplexor.
+ */
+
+CHIP Mux8Way {
+    IN in[8], sel[3];
+    OUT out;
+
+    PARTS:
+	Not(in=sel[0],out=NOTselA);//A=S0
+	Not(in=sel[1],out=NOTselB);//B=S1
+	Not(in=sel[2],out=NOTselC);//C=S2
+	And4Way(a=in[0],b=NOTselA,c=NOTselB,d=NOTselC,out=AND0);
+	And4Way(a=in[1],sel[0],c=NOTselB,d=NOTselC,out=AND1);
+	And4Way(a=in[2],b=NOTselA,c=sel[1],d=NOTselC,out=AND2);
+	And4Way(a=in[3],b=sel[0],c=sel[1],d=NOTselC,out=AND3);
+	And4Way(a=in[4],b=NOTselA,c=NOTselB,d=sel[2],out=AND4);
+	And4Way(a=in[5],b=sel[0],c=NOTselB,d=sel[2],out=AND5);
+	And4Way(a=in[6],b=NOTselA,c=sel[1],d=sel[2],out=AND6);
+	And4Way(a=in[7],b=sel[0],c=sel[1],d=sel[2],out=AND7);
+	Or4Way(a=AND0,b=AND1,c=AND2,d=AND3,out=OR1);
+	Or4Way(a=AND4,b=AND5,c=AND6,d=AND7,out=OR2);
+	Or(a=OR1,b=OR2,out=out);
+}
