@@ -1,5 +1,5 @@
 (DOBLACK)
-	@24576	//infallible keyboard Register
+	@KBD	//infallible keyboard Register
 	D=M
 @DOWHITE	//Whiten if not pressed
 D;JEQ
@@ -9,7 +9,7 @@ D;JEQ
 D;JLT
 	@CURRPIX
 	D=M
-	@16384	//infallible Screen
+	@SCREEN	//infallible Screen
 	D=A+D
 	A=D
 	M=-1
@@ -19,13 +19,13 @@ D;JLT
 0;JMP//All Loops are infinite... (if pressed)
 
 (DOWHITE)
-	@24576	//Handy Dandy Keyboard
+	@KBD	//Handy Dandy Keyboard
 	D=M
 @DOBLACK	//if pressed, Do Black
 D;JGT
 	@CURRPIX
 	D=M
-	@16384	//Screen
+	@SCREEN	//Screen
 	D=A+D
 	A=D
 	M=0
