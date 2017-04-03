@@ -9,13 +9,16 @@ public class Main {
 	static ArrayList<Kword> symbolList = new ArrayList<>();
 	static Scanner sc = new Scanner(System.in);
 	
+	static int currVariable = 16;
+	static int currLoop = 1;
+	
 	public static void main(String[] args) {
 		String tmp;
 		while ((tmp = sc.nextLine()).length() > 0)
 			instructionList.add(tmp);
 		
 		for (String instruction : instructionList){
-			if (instruction.trim().substring(0, 3).contains("//"))//if commented out
+			if (instruction.length() > 2 && instruction.trim().substring(0, 3).contains("//"))//if commented out
 				System.out.print("");
 			else if (instruction.trim().contains("@"))//Variables
 				if (instruction.contains("KBD"))
@@ -23,19 +26,23 @@ public class Main {
 				else if (instruction.contains("SCREEN"))
 					System.out.println((new Kword("SCREEN",16384)).binaryVariablevalue());
 				else if (instruction.contains("SP"))
-					System.out.println((new Kword("SP",0)).binaryVariablevalue());
+					System.out.println(Kword.toBinaryVariablevalue(0));
 				else if (instruction.contains("LCL"))
-					System.out.println((new Kword("LCL",1)).binaryVariablevalue());
+					System.out.println(Kword.toBinaryVariablevalue(1));
 				else if (instruction.contains("ARG"))
-					System.out.println((new Kword("ARG",2)).binaryVariablevalue());
+					System.out.println(Kword.toBinaryVariablevalue(2));
 				else if (instruction.contains("THIS"))
-					System.out.println((new Kword("THIS",3)).binaryVariablevalue());
+					System.out.println(Kword.toBinaryVariablevalue(3));
 				else if (instruction.contains("THAT"))
-					System.out.println((new Kword("THAT",4)).binaryVariablevalue());
+					System.out.println(Kword.toBinaryVariablevalue(4));
 				else if (instruction.contains("@R"))
 					System.out.println((new Kword("",(Integer.parseInt(instruction.trim().substring(2))))).binaryVariablevalue());
+				else if (instruction.trim().toCharArray()[1] < 58)//if num
+					System.out.println((Kword.toBinaryVariablevalue(Integer.parseInt(instruction.trim().substring(1)))));
 				else
-					System.out.println(getOrSetKword((instruction.trim().substring(1))).binaryVariablevalue());
+					System.out.println(getOrSetKword((instruction.trim().substring(1)),false).binaryVariablevalue());
+			else if (instruction.trim().contains("("))
+				getOrSetKword((instruction.trim().substring(1,instruction.trim().length() - 1)),true).binaryVariablevalue();
 		}
 	}
 	
@@ -44,15 +51,11 @@ public class Main {
 	 * @param SYM - Symbol for dictionary
 	 * @return Kword
 	 */
-	private static Kword getOrSetKword(String SYM){
-		if (symbolList.size() == 0){
-			symbolList.add(new Kword(SYM, 16));
-			return symbolList.get(0);
-		}
+	private static Kword getOrSetKword(String SYM, boolean isLoop){
 		if (findKwordIndex(SYM) >= 0)
 			return symbolList.get(findKwordIndex(SYM));
 		else{
-			symbolList.add(new Kword(SYM, symbolList.get(symbolList.size() - 1).getMemLoc() + 1));
+			symbolList.add(new Kword(SYM, (isLoop ? currLoop++ : currVariable++)));
 			return symbolList.get(symbolList.size() - 1);
 		}
 	}

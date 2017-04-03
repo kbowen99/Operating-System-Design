@@ -40,6 +40,7 @@ public class Kword {
 	/**
 	 * @return Binary form of memory value
 	 */
+	@Deprecated
 	public String binaryValue(){
 		return Integer.toBinaryString(this.getMemLoc());
 	}
@@ -48,6 +49,10 @@ public class Kword {
 	 * @return Binary form with dummy bits
 	 */
 	public String binaryVariablevalue(){
-		return "000000000000000".substring(0, (16 - this.binaryValue().length())) + this.binaryValue();
+		return toBinaryVariablevalue(this.getMemLoc());
+	}
+	
+	public static String toBinaryVariablevalue(int toBin){
+		return "000000000000000".substring(0, (16 - Integer.toBinaryString(toBin).length())) + Integer.toBinaryString(toBin);
 	}
 }
