@@ -1,5 +1,7 @@
 package assemble;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -15,7 +17,11 @@ public class Main {
 			"A=M+1","A=M-1","A=1","A=0",
 			"A=A+1","A=A-1","D=D+A","D=A+D",
 			"A=D+A","A=A+D","D=D-M","D=M-D",
-			"D=A-D","D=D-A"
+			"D=A-D","D=D-A","AM=M-1","AM=M+1",
+			"M=-1","A=M-D","AM=D-1","D=D+M",
+			"MD=M+1","MD=M-1","M=M-D","M=M+D",
+			"M=!M","D=!D","A=!A","M=D+M",
+			"M=D&M","M=D|M","AD=A+1","D=!M",
 	};
 	static String[] binDict = {
 			"1110110000010000","1110110111010000","1110110010010000","1111110000010000",
@@ -27,8 +33,11 @@ public class Main {
 			"1111110111100000","1111110010100000","1110111111100000","1110101010100000",
 			"1110110111100000","1110110010100000","1110000010010000","1110000010010000",
 			"1110000010100000","1110000010100000","1111010011010000","1111000111010000",
-			"1110000111010000","1110010011010000"
-			
+			"1110000111010000","1110010011010000","1111110010101000","1111110111101000",
+			"1110111010001000","1111000111100000","1110001110101000","1111000010010000",
+			"1111110111011000","1111110010011000","1111000111001000","1111000010001000",
+			"1111110001001000","1110001101010000","1110110001100000","1111000010001000",
+			"1111000000001000","1111010101001000","1110110111110000","1111110001010000"
 	};
 	
 	static ArrayList<String> instructionList = new ArrayList<>();
@@ -39,6 +48,10 @@ public class Main {
 	static int currLoop = 1;
 	
 	public static void main(String[] args) {
+		try {
+				System.setOut(new PrintStream(new FileOutputStream("out.hack")));
+		} catch (Exception e) {}
+		
 		{
 			String instruction;
 			int loopLine = 0;
@@ -62,12 +75,14 @@ public class Main {
 		}
 		
 		for (String instruction : instructionList){
-			//Dumb User Check: People Who Comment at the end of the line..
-			if (instruction.contains("//"))
-				instruction = instruction.substring(0, instruction.indexOf("//"));
+			//System.out.println(instruction);//Dumb User Check: People Who Comment at the end of the line..
+			//if (instruction.contains("//"))
+			//	instruction = instruction.substring(0, instruction.indexOf("//"));
 			
 			//Dumb User Check: People who don't use tabs...
-			instruction = instruction.trim().replace(" ", "");
+			//instruction = instruction.trim().replace(" ", "");
+			
+			
 			
 			if (instruction.trim().length() > 2 && instruction.trim().substring(0, 3).contains("//"))//if commented out
 				System.out.print("");
@@ -86,7 +101,7 @@ public class Main {
 					System.out.println(Kword.toBinaryVariablevalue(3));
 				else if (instruction.contains("THAT"))
 					System.out.println(Kword.toBinaryVariablevalue(4));
-				else if (instruction.contains("@R"))
+				else if (instruction.contains("@R") && instruction.trim().toCharArray()[2] < 58)
 					System.out.println((new Kword("",(Integer.parseInt(instruction.trim().substring(2))))).binaryVariablevalue());
 				else if (instruction.trim().toCharArray()[1] < 58)//if num
 					System.out.println((Kword.toBinaryVariablevalue(Integer.parseInt(instruction.trim().substring(1)))));
@@ -96,7 +111,11 @@ public class Main {
 				char S = instruction.trim().charAt(0);
 				System.out.print("111" + (S=='M' ? "1" : "0") + (S=='D' ? "0" : "1") + (S=='D'||S=='0' ? "0" : "1") + (S=='A'||S=='M' ? "0" : "1"));
 				System.out.print((S=='D'||S=='1' ? "1" : "0") + (S=='0'||S=='1' ? "1" : "0") + (S=='1' ? "1" : "0"));
-				System.out.println((instruction.trim().contains(";JGT") ? "000001" : (instruction.trim().contains(";JMP") ? "000111" : "-")));
+				System.out.println((instruction.trim().contains("JGT") ? "000001" : 
+					(instruction.trim().contains("JMP") ? "000111" : 
+					(instruction.trim().contains("JNE") ? "000101" : 
+					(instruction.trim().contains("JLE") ? "000110" : 
+					(instruction.trim().contains("JGE") ? "000011" : "-"))))));
 			}
 //			else if (instruction.trim().contains("("))//Loops
 //				getOrSetKword((instruction.trim().substring(1,instruction.trim().length() - 1)),true).binaryVariablevalue();
