@@ -2,9 +2,7 @@
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
 // File name: projects/06/max/Max.asm
-
 // Computes M[2] = max(M[0], M[1])  where M stands for RAM
-
    @0
    D=M              // D = first number
    @1

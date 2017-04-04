@@ -5,6 +5,32 @@ import java.util.Scanner;
 
 public class Main {
 	
+	static String[] asmDict = {
+			"D=A","D=A+1","D=A-1","D=M",
+			"D=M+1","D=M-1","D=1","D=0",
+			"D=D+1","D=D-1","M=D","M=D+1",
+			"M=D-1","M=A","M=A+1","M=A-1",
+			"M=1","M=0","M=M+1","M=M-1",
+			"A=D","A=D+1","A=D-1","A=M",
+			"A=M+1","A=M-1","A=1","A=0",
+			"A=A+1","A=A-1","D=D+A","D=A+D",
+			"A=D+A","A=A+D","D=D-M","D=M-D",
+			"D=A-D","D=D-A"
+	};
+	static String[] binDict = {
+			"1110110000010000","1110110111010000","1110110010010000","1111110000010000",
+			"1111110111010000","1111110010010000","1110111111010000","1110101010010000",
+			"1110011111010000","1110001110010000","1110001100001000","1110011111001000",
+			"1110001110001000","1110110000001000","1110110111001000","1110110010001000",
+			"1110111111001000","1110101010001000","1111110111001000","1111110010001000",
+			"1110001100100000","1110011111100000","1110001110100000","1111110000100000",
+			"1111110111100000","1111110010100000","1110111111100000","1110101010100000",
+			"1110110111100000","1110110010100000","1110000010010000","1110000010010000",
+			"1110000010100000","1110000010100000","1111010011010000","1111000111010000",
+			"1110000111010000","1110010011010000"
+			
+	};
+	
 	static ArrayList<String> instructionList = new ArrayList<>();
 	static ArrayList<Kword> symbolList = new ArrayList<>();
 	static Scanner sc = new Scanner(System.in);
@@ -13,12 +39,37 @@ public class Main {
 	static int currLoop = 1;
 	
 	public static void main(String[] args) {
-		String tmp;
-		while ((tmp = sc.nextLine()).length() > 0)
-			instructionList.add(tmp);
+		{
+			String instruction;
+			int loopLine = 0;
+			while ((instruction = sc.nextLine()).length() > 0){
+				if (instruction.contains("//"))
+					instruction = instruction.substring(0, instruction.indexOf("//"));
+				
+				//Dumb User Check: People who don't use tabs...
+				instruction = instruction.trim().replace(" ", "");
+				
+				//Loop Check
+				if (instruction.contains("(")){
+					//getOrSetKword((instruction.trim().substring(1,instruction.trim().length() - 1)),true).binaryVariablevalue();
+					symbolList.add(new Kword((instruction.trim().substring(1,instruction.trim().length() - 1)), loopLine));
+				} else {
+					instructionList.add(instruction);
+					if (instruction.length() > 0)
+						loopLine++;
+				}
+			}
+		}
 		
 		for (String instruction : instructionList){
-			if (instruction.length() > 2 && instruction.trim().substring(0, 3).contains("//"))//if commented out
+			//Dumb User Check: People Who Comment at the end of the line..
+			if (instruction.contains("//"))
+				instruction = instruction.substring(0, instruction.indexOf("//"));
+			
+			//Dumb User Check: People who don't use tabs...
+			instruction = instruction.trim().replace(" ", "");
+			
+			if (instruction.trim().length() > 2 && instruction.trim().substring(0, 3).contains("//"))//if commented out
 				System.out.print("");
 			else if (instruction.trim().contains("@"))//Variables
 				if (instruction.contains("KBD"))
@@ -41,8 +92,19 @@ public class Main {
 					System.out.println((Kword.toBinaryVariablevalue(Integer.parseInt(instruction.trim().substring(1)))));
 				else
 					System.out.println(getOrSetKword((instruction.trim().substring(1)),false).binaryVariablevalue());
-			else if (instruction.trim().contains("("))
-				getOrSetKword((instruction.trim().substring(1,instruction.trim().length() - 1)),true).binaryVariablevalue();
+			else if (instruction.trim().contains(";J")){
+				char S = instruction.trim().charAt(0);
+				System.out.print("111" + (S=='M' ? "1" : "0") + (S=='D' ? "0" : "1") + (S=='D'||S=='0' ? "0" : "1") + (S=='A'||S=='M' ? "0" : "1"));
+				System.out.print((S=='D'||S=='1' ? "1" : "0") + (S=='0'||S=='1' ? "1" : "0") + (S=='1' ? "1" : "0"));
+				System.out.println((instruction.trim().contains(";JGT") ? "000001" : (instruction.trim().contains(";JMP") ? "000111" : "-")));
+			}
+//			else if (instruction.trim().contains("("))//Loops
+//				getOrSetKword((instruction.trim().substring(1,instruction.trim().length() - 1)),true).binaryVariablevalue();
+			else
+				for (int i = 0; i < asmDict.length; i++)
+					if (asmDict[i].equals(instruction))
+						System.out.println(binDict[i]);
+					
 		}
 	}
 	
