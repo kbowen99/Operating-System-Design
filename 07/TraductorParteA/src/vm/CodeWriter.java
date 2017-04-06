@@ -15,11 +15,12 @@ public class CodeWriter {
 			dir = f.getName();
 		    OUT = new PrintWriter(f);
 		    arthJumpFlag = 0;
+		    doBootStrap();
     	} catch (Exception e) {}
     }
     
     /**
-     * Change file name, for use with directories
+     * Change file name, for use with directories (mult files)
      * @param f File w/Directory
      */
     public void setFileName(File f){
@@ -173,6 +174,30 @@ public class CodeWriter {
     public void kill(){
     	OUT.close();
     }
+    
+    /**
+     * Initializes the File.
+     * CALL ONLY ONCE
+     */
+    public void doBootStrap(){
+    	OUT.print("@256\n" +
+                "D=A\n" +
+                "@SP\n" +
+                "M=D\n");
+    	writeCall("Sys.init",0);
+    }
+    
+    /**
+     * Writes Function Call func to OUT n times
+     * @param func
+     * @param n
+     */
+    public void writeFunction(String func, int n){
+    	OUT.print("(" + func +")\n");
+        for (int i = 0; i < n; i++)
+        	writePushPop(Parser.CMD.PUSH,"constant",0);
+    }
+    
     
     /*
      * ----------------------------------------------------
