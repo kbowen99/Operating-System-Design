@@ -5,22 +5,27 @@ import java.io.PrintWriter;
 import java.util.regex.Pattern;
 
 public class CodeWriter {
-	private int arthJumpFlag;
+	private int currJump;
     private PrintWriter OUT;
     private static int labelCnt = 0;
-    private static String dir = "";
+	private static String dir = "";
     
+    /**
+     * Constructs a new CodeWriter Object
+     * @param f Output File Name/Schema
+     */
     public CodeWriter(File f){
     	try {
 			dir = f.getName();
 		    OUT = new PrintWriter(f);
-		    arthJumpFlag = 0;
-		    doBootStrap();
+		    currJump = 0;
+		    if (Main.BOOTSTRAP)
+		    	doBootStrap();
     	} catch (Exception e) {}
     }
     
     /**
-     * Change file name, for use with directories (mult files)
+     * Change file name, for use with directories (Inter-File Symbols)
      * @param f File w/Directory
      */
     public void setFileName(File f){
@@ -53,19 +58,20 @@ public class CodeWriter {
 	                "D=M\n" +
 	                "A=A-1\n" +
 	                "D=M-D\n" +
-	                "@FALSE" + arthJumpFlag + "\n" +
+	                "@FALSE" + currJump + "\n" +
 	                "D;" + (m==Parser.MATH.GT ? "JLE" : 
 	                (m==Parser.MATH.LT ? "JGE" : "JNE")) + "\n" +
 	                "@SP\n" +
 	                "A=M-1\n" +
 	                "M=-1\n" +
-	                "@CONTINUE" + arthJumpFlag + "\n" +
+	                "@CONTINUE" + currJump + "\n" +
 	                "0;JMP\n" +
-	                "(FALSE" + arthJumpFlag + ")\n" +
+	                "(FALSE" + currJump + ")\n" +
 	                "@SP\n" +
 	                "A=M-1\n" +
 	                "M=0\n" +
-	                "(CONTINUE" + arthJumpFlag + ")\n");
+	                "(CONTINUE" + currJump + ")\n");
+			currJump++;
 			break;
 		case NOT:
 			OUT.print("@SP\n"
@@ -117,10 +123,13 @@ public class CodeWriter {
 			OUT.print((c==Parser.CMD.PUSH ? ASMPush((index==0 ? "THIS" : "THAT"),index,true) : ASMPop((index==0 ? "THIS" : "THAT"),index,true)));
 			break;
 		case "static":
-			if (c == Parser.CMD.POP)
-				OUT.print("@" + dir + index + "\n" + "D=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n");
+			if (Main.BOOTSTRAP)
+				if (c == Parser.CMD.POP)
+					OUT.print("@" + dir + index + "\nD=A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n");
+				else
+					OUT.print("@" + dir + index + "\n" + "D=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n");
 			else
-				OUT.print("@" + dir + index + "\nD=A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n");
+				OUT.print((c == Parser.CMD.POP ? ASMPop(String.valueOf(16 + index),index,true) : ASMPush(String.valueOf(16 + index),index,true)));
 		default:
 			break;
 		}
@@ -143,7 +152,7 @@ public class CodeWriter {
      * @param label Label to Write (& Filter)
      */
     public void writeLabel(String label){
-    	filterOut("(",label,"\n)");
+    	filterOut("(",label,")\n");
     }
     
     /**
@@ -196,6 +205,14 @@ public class CodeWriter {
     	OUT.print("(" + func +")\n");
         for (int i = 0; i < n; i++)
         	writePushPop(Parser.CMD.PUSH,"constant",0);
+    }
+    
+    /**
+     * ACTUALLY PRINTS the Return Code.
+     * Read You're Own Documentation Kurt...
+     */
+    public void writeReturn(){
+    	OUT.print(ASMReturn());
     }
     
     

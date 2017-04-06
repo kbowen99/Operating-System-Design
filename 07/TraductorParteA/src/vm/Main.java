@@ -6,20 +6,25 @@ import java.util.Scanner;
 
 public class Main {
 	
-	/*
+	/**
 	 * Source .VM File/Directory
 	 */
 	public static String inputDir;
-	/*
-	 * Destination .Hack Files
+	/**
+	 * Destination .Hack File
 	 */
 	public static String outDir;
 	
+	/**
+	 * Whether or not the code should bootstrap Sys.VM.
+	 * Not Needed for Ch 7; Extremely Needed for Ch 8
+	 */
+	public static boolean BOOTSTRAP = false;
 	
 	public static ArrayList<File> vmFiles = new ArrayList<>();
 
 	public static void main(String[] args) {
-		String[] tst = {"C:\\Users\\kurti\\Google Drive\\Programs\\NAND2\\Operating-System-Design\\07\\StackArithmetic\\SimpleAdd\\"};args = tst;
+		//String[] tst = {"C:\\Users\\kurti\\Google Drive\\Programs\\NAND2\\Operating-System-Design\\07\\StackArithmetic\\SimpleAdd\\"};args = tst;
 		
 		/*
 		 * File Input
@@ -49,12 +54,17 @@ public class Main {
 			outDir = (new File(inputDir)).getAbsolutePath() + "\\" +  (new File(inputDir)).getName() + ".asm";
 		}
 		
+		if (vmFiles.size() > 1)
+			BOOTSTRAP = true;
+		
 		/*
 		 * Quick Feedback
 		 */
 		System.out.println("Recognized Files:");
 		for (File f : vmFiles)
 			System.out.println(f.getName());
+		if (BOOTSTRAP)
+			System.out.println("Multiple Files Detected. Bootstrapping Sys.vm.");
 		System.out.println("Outputting Files to: \n" + outDir);
 		
 		/*
@@ -82,11 +92,11 @@ public class Main {
 				case IF:
 					write.writeIF(p.getArg1());break;
 				case RETURN:
-					write.ASMReturn();break;
+					write.writeReturn();;break;
 				case FUNCTION:
 					write.writeFunction(p.getArg1(), p.getArg2());break;
 				case CALL:
-					write.writeCall(p.getArg1(), p.getArg2());
+					write.writeCall(p.getArg1(), p.getArg2());break;
 				case NONE:
 				default:
 					break;

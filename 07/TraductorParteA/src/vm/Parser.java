@@ -10,10 +10,16 @@ import java.util.Scanner;
  */
 public class Parser {
 	
+	/**
+	 * VM Command Type
+	 */
 	public enum CMD {
 		MATHS,PUSH,POP,LABEL,GOTO,IF,FUNCTION,RETURN,CALL,NONE,
 	};
 	
+	/**
+	 * VM Math Command Type (They are a type of their own...)
+	 */
 	public enum MATH{
 		ADD,SUB,NEG,EQ,GT,LT,AND,OR,NOT,NONE,
 	}
@@ -36,11 +42,14 @@ public class Parser {
 			 * Uncomments the file
 			 */
 			String newSource = "";
-			for  (String line = ""; commandScan.hasNextLine();line = commandScan.nextLine()){
+			while (commandScan.hasNextLine()){
+				String line = commandScan.nextLine();
 				if (line.contains("//"))
 					line = line.substring(0, line.indexOf("//"));
-				if (line.length() > 0)
+				if (line.length() > 0){
 					newSource += line + "\n";
+					//System.out.println(line);
+				}
 			}
 			
 			commandScan = new Scanner(newSource.trim());
@@ -75,6 +84,9 @@ public class Parser {
 		} else if (c[0].equals("gt")){
 			commandType = CMD.MATHS;
 			commandMath = MATH.GT;
+		} else if (c[0].equals("lt")){
+			commandType = CMD.MATHS;
+			commandMath = MATH.LT;
 		} else if (c[0].equals("and")){
 			commandType = CMD.MATHS;
 			commandMath = MATH.AND;
@@ -108,7 +120,7 @@ public class Parser {
 				throw new IllegalArgumentException("Something Broke. That wasnt a valid command");
 			
 			if ("push pop function call".contains(c[0]))
-				arg2 = Integer.parseInt(c[2]);
+				arg2 = Integer.parseInt(c[2].trim());
 		}
 	}
 	
