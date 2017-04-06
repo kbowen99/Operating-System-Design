@@ -2,9 +2,7 @@
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
 // File name: projects/06/pong/PongL.asm
-
 // Symbol-less version of the Pong.asm program.
-
 @256
 D=A
 @0
