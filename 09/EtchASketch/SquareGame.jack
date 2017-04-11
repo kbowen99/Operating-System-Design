@@ -1,0 +1,91 @@
+/**
+Base File Stolen from Nand2Tetris. modified to run EtchASketch.
+*/
+class SquareGame {
+
+    field Square square; //Square Being Manipulated
+	field char key; //Currently Pressed Key
+	
+	//Keys
+	field char UP_KEY;
+	field char DOWN_KEY;
+	field char LEFT_KEY;
+	field char RIGHT_KEY;
+	field char PLUS_SIZE;
+	field char MINUS_SIZE;
+	field char QUITTER_KEY;
+	field char CLEAR_KEY;
+
+	//Key Mapping & Initialization
+    constructor SquareGame new() {
+        let square = Square.new(0, 0, 10);
+		let UP_KEY = 131;//UP
+		let DOWN_KEY = 133;//DOwn
+		let LEFT_KEY = 130;//Left
+		let RIGHT_KEY = 132;//Right
+		let PLUS_SIZE = 43;//+
+		let MINUS_SIZE = 45;//-
+		let QUITTER_KEY = 81;//q
+		let CLEAR_KEY = 32;//Space
+        return this;
+    }
+
+    method void dispose() {
+        do square.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void run() {
+        var boolean exit;
+
+        let exit = false;
+
+		//~ means !=
+        while (~exit) {
+            // waits for a key to be pressed.
+            while (key = 0) {
+                let key = Keyboard.keyPressed();
+            }
+
+            if (key = QUITTER_KEY) {
+                let exit = true;
+            }
+			if (key = MINUS_SIZE) {
+                do square.decSize();
+				do Sys.wait(50);
+				let key = 1;
+            }
+            if (key = PLUS_SIZE) {
+                do square.incSize();
+				do Sys.wait(50);
+				let key=1;
+            }
+
+			//>=
+			if (key > (LEFT_KEY - 1)){
+				if (key = UP_KEY) {
+					do square.moveUp();//UP
+				}
+				if (key = DOWN_KEY) {
+					do square.moveDown();//Down
+				}
+				if (key = LEFT_KEY) {
+					do square.moveLeft();//Left
+				}
+				if (key = RIGHT_KEY) {
+					do square.moveRight();//Right
+				}
+				do Sys.wait(20);
+			}
+			
+			if (key = CLEAR_KEY){
+				do square.clearScreen();
+			}
+			
+			let key = Keyboard.keyPressed();
+        }
+            
+        return;
+	}
+}
