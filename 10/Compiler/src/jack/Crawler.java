@@ -37,13 +37,13 @@ public class Crawler {
         tz.advance();
         
         if(tz.getTokenType() == JTokenz.tokenType.KEYWORD && (tz.findKeyword() == JTokenz.keywords.INT || tz.findKeyword() == JTokenz.keywords.CHAR || tz.findKeyword() == JTokenz.keywords.BOOLEAN)){
-            writer.print("<keyword>" + tz.getCurrTokenString() + "</keyword>\n");
-        	tokenWriter.print("<keyword>" + tz.getCurrTokenString() + "</keyword>\n");
+            writer.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
+        	tokenWriter.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
         }
 
         if (tz.getTokenType() == JTokenz.tokenType.IDENTIFIER){
-        	writer.print("<identifier>" + tz.identifier() + "</identifier>\n");
-        	tokenWriter.print("<identifier>" + tz.identifier() + "</identifier>\n");
+        	writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
+        	tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
         }
     }
 	
@@ -55,13 +55,13 @@ public class Crawler {
         writer.print("<class>\n");
         tokenWriter.print("<tokens>\n");
 
-        writer.print("<keyword>class</keyword>\n");
-        tokenWriter.print("<keyword>class</keyword>\n");
+        writer.print("<keyword> class </keyword>\n");
+        tokenWriter.print("<keyword> class </keyword>\n");
         
         //className
         tz.advance();
-        writer.print("<identifier>" + tz.identifier() + "</identifier>\n");
-        tokenWriter.print("<identifier>" + tz.identifier() + "</identifier>\n");
+        writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
+        tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
         doSymbol('{');
         
         //classVarDec* subroutineDec*
@@ -93,24 +93,24 @@ public class Crawler {
             return;
         }
         writer.print("<classVarDec>\n");
-        writer.print("<keyword>" + tz.getCurrTokenString() + "</keyword>\n");
-        tokenWriter.print("<keyword>" + tz.getCurrTokenString() + "</keyword>\n");
+        writer.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
+        tokenWriter.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
         compileType();
 
         while(true){
             tz.advance();
 
-            writer.print("<identifier>" + tz.identifier() + "</identifier>\n");
-            tokenWriter.print("<identifier>" + tz.identifier() + "</identifier>\n");
+            writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
+            tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
             
             tz.advance();
             
             if (tz.sym() == ','){
-                writer.print("<symbol>,</symbol>\n");
-                tokenWriter.print("<symbol>,</symbol>\n");
+                writer.print("<symbol> , </symbol>\n");
+                tokenWriter.print("<symbol> , </symbol>\n");
             }else {
-                writer.print("<symbol>;</symbol>\n");
-                tokenWriter.print("<symbol>;</symbol>\n");
+                writer.print("<symbol> ; </symbol>\n");
+                tokenWriter.print("<symbol> ; </symbol>\n");
                 break;
             }
         }
@@ -171,14 +171,14 @@ public class Crawler {
             compileType();
             tz.advance();
             
-            writer.print("<identifier>" + tz.identifier() + "</identifier>\n");
-            tokenWriter.print("<identifier>" + tz.identifier() + "</identifier>\n");
+            writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
+            tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
 
             tz.advance();
 
             if (tz.sym() == ','){
-                writer.print("<symbol>,</symbol>\n");
-                tokenWriter.print("<symbol>,</symbol>\n");
+                writer.print("<symbol> , </symbol>\n");
+                tokenWriter.print("<symbol> , </symbol>\n");
             }else {
                 tz.undo();
                 break;
@@ -195,25 +195,25 @@ public class Crawler {
 
         writer.print("<varDec>\n");
 
-        writer.print("<keyword>var</keyword>\n");
-        tokenWriter.print("<keyword>var</keyword>\n");
+        writer.print("<keyword> var </keyword>\n");
+        tokenWriter.print("<keyword> var </keyword>\n");
 
         compileType();
         
         while(true) {
             tz.advance();
 
-            writer.print("<identifier>" + tz.identifier() + "</identifier>\n");
-            tokenWriter.print("<identifier>" + tz.identifier() + "</identifier>\n");
+            writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
+            tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
 
             tz.advance();
 
             if (tz.sym() == ','){
-                writer.print("<symbol>,</symbol>\n");
-                tokenWriter.print("<symbol>,</symbol>\n");
+                writer.print("<symbol> , </symbol>\n");
+                tokenWriter.print("<symbol> , </symbol>\n");
             }else {
-                writer.print("<symbol>;</symbol>\n");
-                tokenWriter.print("<symbol>;</symbol>\n");
+                writer.print("<symbol> ; </symbol>\n");
+                tokenWriter.print("<symbol> ; </symbol>\n");
                 break;
             }
         }
@@ -223,8 +223,8 @@ public class Crawler {
 	
     private void compileDo(){
         writer.print("<doStatement>\n");
-        writer.print("<keyword>do</keyword>\n");
-        tokenWriter.print("<keyword>do</keyword>\n");
+        writer.print("<keyword> do </keyword>\n");
+        tokenWriter.print("<keyword> do </keyword>\n");
         compileSubroutineCall();
         doSymbol(';');
         writer.print("</doStatement>\n");
@@ -232,13 +232,13 @@ public class Crawler {
     
     private void compileLet(){
         writer.print("<letStatement>\n");
-        writer.print("<keyword>let</keyword>\n");
-        tokenWriter.print("<keyword>let</keyword>\n");
+        writer.print("<keyword> let </keyword>\n");
+        tokenWriter.print("<keyword> let </keyword>\n");
 
         tz.advance();
 
-        writer.print("<identifier>" + tz.identifier() + "</identifier>\n");
-        tokenWriter.print("<identifier>" + tz.identifier() + "</identifier>\n");
+        writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
+        tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
 
         tz.advance();
 
@@ -246,21 +246,21 @@ public class Crawler {
 
         if (tz.sym() == '['){
             expExist = true;
-            writer.print("<symbol>[</symbol>\n");
-            tokenWriter.print("<symbol>[</symbol>\n");
+            writer.print("<symbol> [ </symbol>\n");
+            tokenWriter.print("<symbol> [ </symbol>\n");
             compileExpression();
             
             tz.advance();
             if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == ']'){
-                writer.print("<symbol>]</symbol>\n");
-                tokenWriter.print("<symbol>]</symbol>\n");
+                writer.print("<symbol> ] </symbol>\n");
+                tokenWriter.print("<symbol> ] </symbol>\n");
             }
         }
 
         if (expExist) 
         	tz.advance();
-        writer.print("<symbol>=</symbol>\n");
-        tokenWriter.print("<symbol>=</symbol>\n");
+        writer.print("<symbol> = </symbol>\n");
+        tokenWriter.print("<symbol> = </symbol>\n");
 
         compileExpression();
         doSymbol(';');
@@ -270,8 +270,8 @@ public class Crawler {
     private void compilesWhile(){
         writer.print("<whileStatement>\n");
 
-        writer.print("<keyword>while</keyword>\n");
-        tokenWriter.print("<keyword>while</keyword>\n");
+        writer.print("<keyword> while </keyword>\n");
+        tokenWriter.print("<keyword> while </keyword>\n");
         doSymbol('(');
         compileExpression();
         doSymbol(')');
@@ -286,12 +286,12 @@ public class Crawler {
     private void compileReturn(){
         writer.print("<returnStatement>\n");
 
-        writer.print("<keyword>return</keyword>\n");
-        tokenWriter.print("<keyword>return</keyword>\n");
+        writer.print("<keyword> return </keyword>\n");
+        tokenWriter.print("<keyword> return </keyword>\n");
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == ';'){
-            writer.print("<symbol>;</symbol>\n");
-            tokenWriter.print("<symbol>;</symbol>\n");
+            writer.print("<symbol> ; </symbol>\n");
+            tokenWriter.print("<symbol> ; </symbol>\n");
             writer.print("</returnStatement>\n");
             return;
         }
@@ -303,8 +303,8 @@ public class Crawler {
     
     private void compileIf(){
         writer.print("<ifStatement>\n");
-        writer.print("<keyword>if</keyword>\n");
-        tokenWriter.print("<keyword>if</keyword>\n");
+        writer.print("<keyword> if </keyword>\n");
+        tokenWriter.print("<keyword> if </keyword>\n");
         doSymbol('(');
         compileExpression();
         doSymbol(')');
@@ -315,8 +315,8 @@ public class Crawler {
         doSymbol('}');
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.KEYWORD && tz.findKeyword() == JTokenz.keywords.ELSE){
-            writer.print("<keyword>else</keyword>\n");
-            tokenWriter.print("<keyword>else</keyword>\n");
+            writer.print("<keyword> else </keyword>\n");
+            tokenWriter.print("<keyword> else </keyword>\n");
             doSymbol('{');
             writer.print("<statements>\n");
             compileStatement();
@@ -334,43 +334,43 @@ public class Crawler {
             String tmp = tz.identifier();
             tz.advance();
             if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == '['){
-                writer.print("<identifier>" + tmp + "</identifier>\n");
-                tokenWriter.print("<identifier>" + tmp + "</identifier>\n");
-                writer.print("<symbol>[</symbol>\n");
-                tokenWriter.print("<symbol>[</symbol>\n");
+                writer.print("<identifier> " + tmp + " </identifier>\n");
+                tokenWriter.print("<identifier> " + tmp + " </identifier>\n");
+                writer.print("<symbol> [ </symbol>\n");
+                tokenWriter.print("<symbol> [ </symbol>\n");
                 compileExpression();
                 doSymbol(']');
             }else if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && (tz.sym() == '(' || tz.sym() == '.')){
                 tz.undo();tz.undo();
                 compileSubroutineCall();
             }else {
-                writer.print("<identifier>" + tmp + "</identifier>\n");
-                tokenWriter.print("<identifier>" + tmp + "</identifier>\n");
+                writer.print("<identifier> " + tmp + " </identifier>\n");
+                tokenWriter.print("<identifier> " + tmp + " </identifier>\n");
                 tz.undo();
             }
 
         }else{
             if (tz.getTokenType() == JTokenz.tokenType.INT_CONSTANT){
-                writer.print("<integerConstant>" + tz.intValue() + "</integerConstant>\n");
-                tokenWriter.print("<integerConstant>" + tz.intValue() + "</integerConstant>\n");
+                writer.print("<integerConstant> " + tz.intValue() + " </integerConstant>\n");
+                tokenWriter.print("<integerConstant> " + tz.intValue() + " </integerConstant>\n");
             }else if (tz.getTokenType() == JTokenz.tokenType.STRING_CONSTANT){
-                writer.print("<stringConstant>" + tz.stringVal() + "</stringConstant>\n");
-                tokenWriter.print("<stringConstant>" + tz.stringVal() + "</stringConstant>\n");
+                writer.print("<stringConstant> " + tz.stringVal() + " </stringConstant>\n");
+                tokenWriter.print("<stringConstant> " + tz.stringVal() + " </stringConstant>\n");
             }else if(tz.getTokenType() == JTokenz.tokenType.KEYWORD &&
                             (tz.findKeyword() == JTokenz.keywords.TRUE ||
                             tz.findKeyword() == JTokenz.keywords.FALSE ||
                             tz.findKeyword() == JTokenz.keywords.NULL ||
                             tz.findKeyword() == JTokenz.keywords.THIS)){
-                    writer.print("<keyword>" + tz.getCurrTokenString() + "</keyword>\n");
-                    tokenWriter.print("<keyword>" + tz.getCurrTokenString() + "</keyword>\n");
+                    writer.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
+                    tokenWriter.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
             }else if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == '('){
-                writer.print("<symbol>(</symbol>\n");
-                tokenWriter.print("<symbol>(</symbol>\n");
+                writer.print("<symbol> ( </symbol>\n");
+                tokenWriter.print("<symbol> ( </symbol>\n");
                 compileExpression();
                 doSymbol(')');
             }else if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && (tz.sym() == '-' || tz.sym() == '~')){
-                writer.print("<symbol>" + tz.sym() + "</symbol>\n");
-                tokenWriter.print("<symbol>" + tz.sym() + "</symbol>\n");
+                writer.print("<symbol> " + tz.sym() + " </symbol>\n");
+                tokenWriter.print("<symbol> " + tz.sym() + " </symbol>\n");
                 compileTerm();
             }
         }
@@ -379,23 +379,23 @@ public class Crawler {
     
     private void compileSubroutineCall(){
         tz.advance();
-        writer.print("<identifier>" + tz.identifier() + "</identifier>\n");
-        tokenWriter.print("<identifier>" + tz.identifier() + "</identifier>\n");
+        writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
+        tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
 
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == '('){
-            writer.print("<symbol>(</symbol>\n");
-            tokenWriter.print("<symbol>(</symbol>\n");
+            writer.print("<symbol> ( </symbol>\n");
+            tokenWriter.print("<symbol> ( </symbol>\n");
             writer.print("<expressionList>\n");
             compileExpressionList();
             writer.print("</expressionList>\n");
             doSymbol(')');
         }else if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == '.'){
-            writer.print("<symbol>.</symbol>\n");
-            tokenWriter.print("<symbol>.</symbol>\n");
+            writer.print("<symbol> . </symbol>\n");
+            tokenWriter.print("<symbol> . </symbol>\n");
             tz.advance();
-            writer.print("<identifier>" + tz.identifier() + "</identifier>\n");
-            tokenWriter.print("<identifier>" + tz.identifier() + "</identifier>\n");
+            writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
+            tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
             doSymbol('(');
             writer.print("<expressionList>\n");
             compileExpressionList();
@@ -413,17 +413,17 @@ public class Crawler {
             tz.advance();
             if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.isOperation()){
                 if (tz.sym() == '>'){
-                    writer.print("<symbol>&gt;</symbol>\n");
-                    tokenWriter.print("<symbol>&gt;</symbol>\n");
+                    writer.print("<symbol> &gt; </symbol>\n");
+                    tokenWriter.print("<symbol> &gt; </symbol>\n");
                 }else if (tz.sym() == '<'){
-                    writer.print("<symbol>&lt;</symbol>\n");
-                    tokenWriter.print("<symbol>&lt;</symbol>\n");
+                    writer.print("<symbol> &lt; </symbol>\n");
+                    tokenWriter.print("<symbol> &lt; </symbol>\n");
                 }else if (tz.sym() == '&') {
-                    writer.print("<symbol>&amp;</symbol>\n");
-                    tokenWriter.print("<symbol>&amp;</symbol>\n");
+                    writer.print("<symbol> &amp; </symbol>\n");
+                    tokenWriter.print("<symbol> &amp; </symbol>\n");
                 }else {
-                    writer.print("<symbol>" + tz.sym() + "</symbol>\n");
-                    tokenWriter.print("<symbol>" + tz.sym() + "</symbol>\n");
+                    writer.print("<symbol> " + tz.sym() + " </symbol>\n");
+                    tokenWriter.print("<symbol> " + tz.sym() + " </symbol>\n");
                 }
                 compileTerm();
             }else {
@@ -444,8 +444,8 @@ public class Crawler {
             while (true) {
                 tz.advance();
                 if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == ','){
-                    writer.print("<symbol>,</symbol>\n");
-                    tokenWriter.print("<symbol>,</symbol>\n");
+                    writer.print("<symbol> , </symbol>\n");
+                    tokenWriter.print("<symbol> , </symbol>\n");
                     compileExpression();
                 }else {
                     tz.undo();
@@ -458,8 +458,8 @@ public class Crawler {
     private void doSymbol(char symbol){
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == symbol){
-            writer.print("<symbol>" + symbol + "</symbol>\n");
-            tokenWriter.print("<symbol>" + symbol + "</symbol>\n");
+            writer.print("<symbol> " + symbol + " </symbol>\n");
+            tokenWriter.print("<symbol> " + symbol + " </symbol>\n");
         }
     }
     
@@ -471,14 +471,14 @@ public class Crawler {
         }
         
         writer.print("<subroutineDec>\n");
-        writer.print("<keyword>" + tz.getCurrTokenString() + "</keyword>\n");
-        tokenWriter.print("<keyword>" + tz.getCurrTokenString() + "</keyword>\n");
+        writer.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
+        tokenWriter.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
 
         tz.advance();
         
         if (tz.getTokenType() == JTokenz.tokenType.KEYWORD && tz.findKeyword() == JTokenz.keywords.VOID){
-            writer.print("<keyword>void</keyword>\n");
-            tokenWriter.print("<keyword>void</keyword>\n");
+            writer.print("<keyword> void </keyword>\n");
+            tokenWriter.print("<keyword> void </keyword>\n");
         } else {
             tz.undo();
             compileType();
@@ -486,8 +486,8 @@ public class Crawler {
         
         tz.advance();
 
-        writer.print("<identifier>" + tz.identifier() + "</identifier>\n");
-        tokenWriter.print("<identifier>" + tz.identifier() + "</identifier>\n");
+        writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
+        tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
         doSymbol('(');
         writer.print("<parameterList>\n");
         compileParameterList();
