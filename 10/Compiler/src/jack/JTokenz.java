@@ -54,23 +54,22 @@ public class JTokenz {
             scanner = new Scanner(input);
             String preprocessed = "";
             String line = "";
-
+            tokens = new ArrayList<String>();
+            tokenIndex = 0;
+            
             //Clean every line of the file
             while(scanner.hasNext())
                 if ((line = nuttinButStringz(scanner.nextLine()).trim()).length() > 0) 
                     preprocessed += line + "\n";
 
             preprocessed = unblockComment(preprocessed).trim();
-
+            
+            //Adds all actual Tokens
             Matcher m = tokenRegex().matcher(preprocessed);
-            tokens = new ArrayList<String>();
-            tokenIndex = 0;
-
             while (m.find())
                 tokens.add(m.group());
-
         } catch (FileNotFoundException e) {}//This was totally meant to be used in this way
-
+		//Probably not necessary
         currentToken = keywords.NONE;
         currentTokenType = tokenType.NONE;
 	}
@@ -108,6 +107,9 @@ public class JTokenz {
         return tokenIndex < tokens.size();
     }
     
+    /**
+     * Moves on to next token
+     */
     public void advance(){
         if (hasMoreTokens()) {
             currentString = tokens.get(tokenIndex);
@@ -196,9 +198,7 @@ public class JTokenz {
     }
     
     /**
-     * I honestly dont remember what I was going to use this for...
-     * Deprecated?...
-     * @return
+     * @return Current Symbol
      */
     public char sym(){
     	if (currentTokenType == tokenType.SYMBOL)
@@ -234,7 +234,7 @@ public class JTokenz {
     }
     
     /**
-     * Jumps back to previous token
+     * Jumps back to previous token (Decrements TokenIndex, causing duplicate execution. Feature, not bug)
      */
     public void undo(){
     	tokenIndex--;
