@@ -145,6 +145,15 @@ public class VMW {
         VMwriter.close();
     }
     
-    
+    /**
+     * These Dummy Methods were added to quickly mark where in Crawler needs to be fixed (Deprecation == bad)
+     */
+    @Deprecated
+    public void print(Object o){}
+    /**
+     * These Dummy Methods were added to quickly mark where in Crawler needs to be fixed (Deprecation == bad)
+     */
+    @Deprecated
+    public void close(){};
 
 }
