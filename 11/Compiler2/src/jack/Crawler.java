@@ -11,7 +11,7 @@ import java.io.PrintWriter;
  *
  */
 public class Crawler {
-	private PrintWriter writer;
+	private VMW writer;
 	private PrintWriter tokenWriter;
 	private JTokenz tz;
 	
@@ -24,7 +24,7 @@ public class Crawler {
 	public Crawler(File input, File output, File outToken){
         try {
             tz = new JTokenz(input);
-            writer = new PrintWriter(output);
+            writer = new VMW(output);
             tokenWriter = new PrintWriter(outToken);
         } catch (FileNotFoundException e){ }
 	}
