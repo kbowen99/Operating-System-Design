@@ -27,24 +27,24 @@ push argument 0
 pop pointer 0
 push constant 0
 pop local 1
-label LABEL_1 
+label LABEL_0 
 push local 1
 not  
 not  
-if-goto LABEL_0 
-label LABEL_3 
+if-goto LABEL_1 
+label LABEL_2 
 push local 0
 push constant 0
 eq  
 not  
-if-goto LABEL_2 
+if-goto LABEL_3 
 call Keyboard.keyPressed 0
 pop local 0
 push pointer 0
 call SquareGame.moveSquare 1
 pop temp 0
-goto LABEL_3 
-label LABEL_2 
+goto LABEL_2 
+label LABEL_3 
 push local 0
 push constant 81
 eq  
@@ -118,22 +118,22 @@ pop this 1
 goto LABEL_17 
 label LABEL_16 
 label LABEL_17 
-label LABEL_19 
+label LABEL_18 
 push local 0
 push constant 0
 eq  
 not  
 not  
-if-goto LABEL_18 
+if-goto LABEL_19 
 call Keyboard.keyPressed 0
 pop local 0
 push pointer 0
 call SquareGame.moveSquare 1
 pop temp 0
-goto LABEL_19 
-label LABEL_18 
-goto LABEL_1 
-label LABEL_0 
+goto LABEL_18 
+label LABEL_19 
+goto LABEL_0 
+label LABEL_1 
 push constant 0
 return  
 function SquareGame.moveSquare 0

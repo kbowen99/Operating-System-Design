@@ -25,7 +25,7 @@ public class Crawler {
 	 * @param output Output File
 	 * @param outToken Tokenized Output
 	 */
-	public Crawler(File input, File output, File outToken){
+	public Crawler(File input, File output){
         try {
             tz = new JTokenz(input);
             writer = new VMW(output);

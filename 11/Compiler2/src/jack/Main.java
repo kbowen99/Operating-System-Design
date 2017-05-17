@@ -20,8 +20,8 @@ public class Main {
 
 		//Sloppy Initialization
         File fileIn = new File(fileInput);
-        String fileOutPath = "", tokenFileOutPath = "";
-        File fileOut,tokenFileOut;
+        String fileOutPath = "";
+        File fileOut;
         ArrayList<File> jFiles = new ArrayList<File>();
 
         //To directory or not to directory, there is no filing
@@ -38,17 +38,14 @@ public class Main {
 
         //Runs tokenizer for each file in queue
         for (File f: jFiles) {
-            fileOutPath = f.getAbsolutePath().substring(0, f.getAbsolutePath().lastIndexOf(".")) + ".xml";
-            tokenFileOutPath = f.getAbsolutePath().substring(0, f.getAbsolutePath().lastIndexOf(".")) + "T.xml";
+            fileOutPath = f.getAbsolutePath().substring(0, f.getAbsolutePath().lastIndexOf(".")) + ".vm";
             fileOut = new File(fileOutPath);
-            tokenFileOut = new File(tokenFileOutPath);
 
-            Crawler creepy = new Crawler(f,fileOut,tokenFileOut);
+            Crawler creepy = new Crawler(f,fileOut);
             creepy.compileClass();
             
             //Extremely useful when you suck at / vs \
             System.out.println("File created : " + fileOutPath);
-            System.out.println("File created : " + tokenFileOutPath);
         }
 	}
 
