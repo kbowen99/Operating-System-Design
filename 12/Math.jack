@@ -10,29 +10,143 @@ class Math {
 
     /** Initializes the library. */
     function void init() {
+		return;
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+		if (x < 0){
+			let x = -x;
+		}
+		return x;
     }
 
     /** Returns the product of x and y. */
     function int multiply(int x, int y) {
+		//determine polarity
+		var bool pos;
+		var int smaller;
+		var int bigger;
+		var int product;
+		
+		let pos = 1;
+		if (x < 0){
+			let pos = Math.not(pos);
+		}
+		if (y < 0){
+			let pos = Math.not(pos);
+		}
+		let x = Math.abs(x);
+		let y = Math.abs(y);
+		
+		//Max/Min
+		let smaller = Math.min(x,y);
+		let bigger = Math.max(x,y);
+		
+		//multiplication!
+		let product = 0;
+		while (smaller > 0){
+			let product = product + bigger;
+			let smaller = smaller - 1;
+		}
+		
+		if (Math.not(pos)){
+			let product = -product;
+		}
+		
+		return product;
     }
 
     /** Returns the integer part of x/y. */
     function int divide(int x, int y) {
+		var int divisions;
+		var bool pos;
+		
+		//polarity
+		let pos = 1;
+		if (x < 0){
+			let pos = Math.not(pos);
+		}
+		if (y < 0){
+			let pos = Math.not(pos);
+		}
+		let x = Math.abs(x);
+		let y = Math.abs(y);
+		
+		//"divisions"
+		let divisions = 0;
+		while ((x - Math.multiply(y, divisions)) > 0){
+			let divisions = divisions + 1;
+		}
+		
+		//truncate
+		if (Math.multiply(y, divisions) > x){
+			let divisions = divisions - 1;
+		}
+		
+		//correct for polarity
+		if (Math.not(pos)){
+			let divisions = -divisions;
+		}
+		
+		return divisions;
     }
 
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
+		var int y,j,temp,tempQ;
+
+        let y = 0;
+        let j = 7;
+
+        while(~(j < 0)){
+            let temp = y + Math.pow(2,j);
+            let tempQ = temp * temp;
+            //avoid overflow
+            if(~(tempQ > x) & (tempQ > 0)){
+                let y = temp;
+            }
+            let j = j - 1;
+        }
+
+        return y;
     }
 
     /** Returns the greater number. */
     function int max(int a, int b) {
+		if (a < b) {
+			return b;
+		} else {
+			return a;
+		}
     }
 
     /** Returns the smaller number. */
     function int min(int a, int b) {
+		if (a > b) {
+			return b;
+		} else {
+			return a;
+		}
     }
+	
+	function bool not(bool x){
+		if (x) {
+			return 0;
+		} else {
+			return 1;
+		}
+	}
+	
+	function int pow(int base, int power){
+		var int product;
+		let product = 1;
+		
+		while (power > 0){
+			let product = Math.multiply(product, base);
+			let power = power - 1;
+		}
+		
+		return product;
+	}
 }
