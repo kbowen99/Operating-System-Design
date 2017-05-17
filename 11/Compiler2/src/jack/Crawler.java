@@ -1,19 +1,23 @@
 package jack;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import jack.JTokenz.keywords;
+import jack.Symbol.type;
+import jack.VMW.Seg;
 
 /**
  * This Code is not fun.
- * I would highly reccomend staying away...
+ * I would highly recommend staying away...
  * @author Kbowen99
  *
  */
 public class Crawler {
 	private VMW writer;
-	private PrintWriter tokenWriter;
 	private JTokenz tz;
+	private SymbolTable sTable;
+	private String currentClass = "";
+    private String currentSubroutine = "";
+    private int lblIndex = 0;
 	
 	/**
 	 * Creates a new Crawler
@@ -25,25 +29,25 @@ public class Crawler {
         try {
             tz = new JTokenz(input);
             writer = new VMW(output);
-            tokenWriter = new PrintWriter(outToken);
-        } catch (FileNotFoundException e){ }
+            sTable = new SymbolTable();
+        } catch (Exception e){ }
 	}
 	
 	/**
 	 * Compiles type Variables (Int, CHar, Bool,) or ID
 	 */
-	private void compileType(){
+	private String compileType(){
         tz.advance();
         
         if(tz.getTokenType() == JTokenz.tokenType.KEYWORD && (tz.findKeyword() == JTokenz.keywords.INT || tz.findKeyword() == JTokenz.keywords.CHAR || tz.findKeyword() == JTokenz.keywords.BOOLEAN)){
-            writer.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
-        	tokenWriter.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
+            return tz.getCurrTokenString();
         }
 
         if (tz.getTokenType() == JTokenz.tokenType.IDENTIFIER){
-        	writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
-        	tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
+        	return tz.identifier();
         }
+        
+        return "";
     }
 	
 	/**
@@ -51,28 +55,16 @@ public class Crawler {
 	 */
 	public void compileClass(){
         tz.advance();
-        writer.print("<class>\n");
-        tokenWriter.print("<tokens>\n");
-
-        writer.print("<keyword> class </keyword>\n");
-        tokenWriter.print("<keyword> class </keyword>\n");
-        
-        //className
+        if (tz.getTokenType() != JTokenz.tokenType.KEYWORD || tz.findKeyword() != JTokenz.keywords.CLASS)
+            System.out.println(tz.getCurrTokenString());
         tz.advance();
-        writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
-        tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
+        currentClass = tz.identifier();
         doSymbol('{');
-        
-        //classVarDec* subroutineDec*
         compileClassVarDec();
         compileSubroutine();
         doSymbol('}');
-        
-        tokenWriter.print("</tokens>\n");
-        writer.print("</class>\n");
-        
-        writer.close();
-        tokenWriter.close();
+        writer.kill();
+
     }
 	
 	/**
@@ -80,7 +72,6 @@ public class Crawler {
 	 * Recursive Calls are probably the most ghetto way to do this, but work nonetheless
 	 */
 	private void compileClassVarDec(){
-		//ID
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == '}'){
             tz.undo();
@@ -91,44 +82,44 @@ public class Crawler {
             tz.undo();
             return;
         }
-        writer.print("<classVarDec>\n");
-        writer.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
-        tokenWriter.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
-        compileType();
+        
+        //Switch Tokenizer keyword to Symbol Keyword, its a little ghetto
+        Symbol.type key = (tz.findKeyword() == JTokenz.keywords.STATIC? Symbol.type.STATIC : (tz.findKeyword() == JTokenz.keywords.FIELD ? Symbol.type.FIELD : null));
+        String type = compileType();
+        String name = "";
 
         while(true){
             tz.advance();
-
-            writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
-            tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
-            
+            name = tz.identifier();
+            sTable.define(name, type, key);
             tz.advance();
-            
-            if (tz.sym() == ','){
-                writer.print("<symbol> , </symbol>\n");
-                tokenWriter.print("<symbol> , </symbol>\n");
-            }else {
-                writer.print("<symbol> ; </symbol>\n");
-                tokenWriter.print("<symbol> ; </symbol>\n");
-                break;
-            }
+            if (tz.sym() == ';')
+            	break;
         }
-        writer.print("</classVarDec>\n");
         compileClassVarDec();
     }
 	
-    private void compileSubroutineBody(){
-		writer.print("<subroutineBody>\n");
+    private void compileSubroutineBody(JTokenz.keywords keyword){
 		doSymbol('{');
 		compileVarDec();
-		writer.print("<statements>\n");
+		writeFunctionDec(keyword);
 		compileStatement();
-		writer.print("</statements>\n");
 		doSymbol('}');
-		writer.print("</subroutineBody>\n");
     }
     
-    /**
+    private void writeFunctionDec(keywords keyword) {
+		writer.writeFunction(currentFunction(), sTable.varCount(Symbol.type.VAR));
+		if (keyword == JTokenz.keywords.METHOD){
+            writer.writePush(VMW.Seg.ARG, 0);
+            writer.writePop(VMW.Seg.POINTER,0);
+        }else if (keyword == JTokenz.keywords.CONSTRUCTOR){
+            writer.writePush(VMW.Seg.CONST,sTable.varCount(Symbol.type.FIELD));
+            writer.writeCall("Memory.alloc", 1);
+            writer.writePop(VMW.Seg.POINTER,0);
+        }
+	}
+
+	/**
      * Recursively compile stuff!
      */
     private void compileStatement(){
@@ -146,7 +137,7 @@ public class Crawler {
                 case IF:
                 	compileIf();break;
                 case WHILE:
-                	compilesWhile();break;
+                	compileWhile();break;
                 case DO:
                 	compileDo();break;
                 case RETURN:
@@ -166,19 +157,15 @@ public class Crawler {
         }
         tz.undo();
         
+        String type = "";
+        
         while(true){
-            compileType();
+            type = compileType();
             tz.advance();
-            
-            writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
-            tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
-
+            sTable.define(tz.identifier(), type, Symbol.type.ARG);
             tz.advance();
 
-            if (tz.sym() == ','){
-                writer.print("<symbol> , </symbol>\n");
-                tokenWriter.print("<symbol> , </symbol>\n");
-            }else {
+            if (tz.sym() == ')'){
                 tz.undo();
                 break;
             }
@@ -191,275 +178,280 @@ public class Crawler {
             tz.undo();
             return;
         }
-
-        writer.print("<varDec>\n");
-
-        writer.print("<keyword> var </keyword>\n");
-        tokenWriter.print("<keyword> var </keyword>\n");
-
-        compileType();
+        
+        String type = compileType();
         
         while(true) {
             tz.advance();
-
-            writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
-            tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
-
+            sTable.define(tz.identifier(), type, Symbol.type.VAR);
             tz.advance();
-
-            if (tz.sym() == ','){
-                writer.print("<symbol> , </symbol>\n");
-                tokenWriter.print("<symbol> , </symbol>\n");
-            }else {
-                writer.print("<symbol> ; </symbol>\n");
-                tokenWriter.print("<symbol> ; </symbol>\n");
+            if (tz.sym() == ';')
                 break;
-            }
         }
-        writer.print("</varDec>\n");
         compileVarDec();
     }
 	
     private void compileDo(){
-        writer.print("<doStatement>\n");
-        writer.print("<keyword> do </keyword>\n");
-        tokenWriter.print("<keyword> do </keyword>\n");
         compileSubroutineCall();
         doSymbol(';');
-        writer.print("</doStatement>\n");
+        writer.writePop(VMW.Seg.TEMP, 0);
     }
     
     private void compileLet(){
-        writer.print("<letStatement>\n");
-        writer.print("<keyword> let </keyword>\n");
-        tokenWriter.print("<keyword> let </keyword>\n");
-
         tz.advance();
-
-        writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
-        tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
-
+        String tmp = tz.identifier();
         tz.advance();
-
         boolean expExist = false;
 
         if (tz.sym() == '['){
             expExist = true;
-            writer.print("<symbol> [ </symbol>\n");
-            tokenWriter.print("<symbol> [ </symbol>\n");
+            writer.writePush(getSeg(sTable.kindOf(tmp)),sTable.indexOf(tmp));
             compileExpression();
-            
-            tz.advance();
-            if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == ']'){
-                writer.print("<symbol> ] </symbol>\n");
-                tokenWriter.print("<symbol> ] </symbol>\n");
-            }
+            doSymbol(']');
+            writer.writeArithmetic(VMW.Op.ADD);
         }
-
         if (expExist) 
         	tz.advance();
-        writer.print("<symbol> = </symbol>\n");
-        tokenWriter.print("<symbol> = </symbol>\n");
-
         compileExpression();
         doSymbol(';');
-        writer.print("</letStatement>\n");
+        if (expExist){
+            writer.writePop(Seg.TEMP,0);
+            writer.writePop(Seg.POINTER,1);
+            writer.writePush(Seg.TEMP,0);
+            writer.writePop(Seg.THAT,0);
+        } else 
+            writer.writePop(getSeg(sTable.kindOf(tmp)), sTable.indexOf(tmp));
     }
     
-    private void compilesWhile(){
-        writer.print("<whileStatement>\n");
+    /**
+     * Symbol Type --> VMW Seg
+     * @param kindOf
+     * @return
+     */
+	private Seg getSeg(type kindOf) {
+        switch (kindOf){
+            case FIELD:
+            	return Seg.THIS;
+            case STATIC:
+            	return Seg.STATIC;
+            case VAR:
+            	return Seg.LOCAL;
+            case ARG:
+            	return Seg.ARG;
+            default:
+            	return Seg.NONE;
+        }
+	}
 
-        writer.print("<keyword> while </keyword>\n");
-        tokenWriter.print("<keyword> while </keyword>\n");
+	private void compileWhile(){
+		String lbl1 = newLbl();
+		String lbl2 = newLbl();
+		writer.writeLabel(lbl1);
         doSymbol('(');
         compileExpression();
         doSymbol(')');
+        writer.writeArithmetic(VMW.Op.NOT);
+        writer.writeIf(lbl2);
         doSymbol('{');
-        writer.print("<statements>\n");
         compileStatement();
-        writer.print("</statements>\n");
         doSymbol('}');
-        writer.print("</whileStatement>\n");
+        writer.writeGoto(lbl1);
+        writer.writeLabel(lbl2);
     }
     
-    private void compileReturn(){
-        writer.print("<returnStatement>\n");
+	/**
+	 * @return Increments to next label index, generates string
+	 */
+    private String newLbl() {
+    	return "LABEL_" + lblIndex++;
+	}
 
-        writer.print("<keyword> return </keyword>\n");
-        tokenWriter.print("<keyword> return </keyword>\n");
+	private void compileReturn(){
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == ';'){
-            writer.print("<symbol> ; </symbol>\n");
-            tokenWriter.print("<symbol> ; </symbol>\n");
-            writer.print("</returnStatement>\n");
-            return;
+            writer.writePush(Seg.CONST, 0);
+        } else {
+        	tz.undo();
+            compileExpression();
+            doSymbol(';');
         }
-        tz.undo();
-        compileExpression();
-        doSymbol(';');
-        writer.print("</returnStatement>\n");
+        writer.writeReturn();
     }
     
     private void compileIf(){
-        writer.print("<ifStatement>\n");
-        writer.print("<keyword> if </keyword>\n");
-        tokenWriter.print("<keyword> if </keyword>\n");
+    	String elseLbl = newLbl();
+        String outLbl = newLbl();
         doSymbol('(');
         compileExpression();
         doSymbol(')');
+        writer.writeArithmetic(VMW.Op.NOT);
+        writer.writeIf(elseLbl);
         doSymbol('{');
-        writer.print("<statements>\n");
         compileStatement();
-        writer.print("</statements>\n");
         doSymbol('}');
+        writer.writeGoto(outLbl);
+        writer.writeLabel(elseLbl);
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.KEYWORD && tz.findKeyword() == JTokenz.keywords.ELSE){
-            writer.print("<keyword> else </keyword>\n");
-            tokenWriter.print("<keyword> else </keyword>\n");
             doSymbol('{');
-            writer.print("<statements>\n");
             compileStatement();
-            writer.print("</statements>\n");
             doSymbol('}');
-        }else
+        } else
             tz.undo();
-        writer.print("</ifStatement>\n");
+        writer.writeLabel(outLbl);
     }
     
     private void compileTerm(){
-        writer.print("<term>\n");
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.IDENTIFIER){
             String tmp = tz.identifier();
             tz.advance();
             if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == '['){
-                writer.print("<identifier> " + tmp + " </identifier>\n");
-                tokenWriter.print("<identifier> " + tmp + " </identifier>\n");
-                writer.print("<symbol> [ </symbol>\n");
-                tokenWriter.print("<symbol> [ </symbol>\n");
+            	writer.writePush(getSeg(sTable.kindOf(tmp)),sTable.indexOf(tmp));
                 compileExpression();
                 doSymbol(']');
+                writer.writeArithmetic(VMW.Op.ADD);
+                writer.writePop(Seg.POINTER,1);
+                writer.writePush(Seg.THAT,0);
             }else if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && (tz.sym() == '(' || tz.sym() == '.')){
                 tz.undo();tz.undo();
                 compileSubroutineCall();
             }else {
-                writer.print("<identifier> " + tmp + " </identifier>\n");
-                tokenWriter.print("<identifier> " + tmp + " </identifier>\n");
                 tz.undo();
+                writer.writePush(getSeg(sTable.kindOf(tmp)), sTable.indexOf(tmp));
             }
 
         }else{
             if (tz.getTokenType() == JTokenz.tokenType.INT_CONSTANT){
-                writer.print("<integerConstant> " + tz.intValue() + " </integerConstant>\n");
-                tokenWriter.print("<integerConstant> " + tz.intValue() + " </integerConstant>\n");
+            	writer.writePush(Seg.CONST,tz.intValue());
             }else if (tz.getTokenType() == JTokenz.tokenType.STRING_CONSTANT){
-                writer.print("<stringConstant> " + tz.stringVal() + " </stringConstant>\n");
-                tokenWriter.print("<stringConstant> " + tz.stringVal() + " </stringConstant>\n");
-            }else if(tz.getTokenType() == JTokenz.tokenType.KEYWORD &&
-                            (tz.findKeyword() == JTokenz.keywords.TRUE ||
-                            tz.findKeyword() == JTokenz.keywords.FALSE ||
-                            tz.findKeyword() == JTokenz.keywords.NULL ||
-                            tz.findKeyword() == JTokenz.keywords.THIS)){
-                    writer.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
-                    tokenWriter.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
+            	String str = tz.stringVal();
+                writer.writePush(Seg.CONST,str.length());
+                writer.writeCall("String.new",1);
+
+                for (int i = 0; i < str.length(); i++){
+                    writer.writePush(Seg.CONST,(int)str.charAt(i));
+                    writer.writeCall("String.appendChar",2);
+                }
+            }else if(tz.getTokenType() == JTokenz.tokenType.KEYWORD){
+            	if (tz.findKeyword() == JTokenz.keywords.TRUE){
+            		writer.writePush(Seg.CONST,0);
+                    writer.writeArithmetic(VMW.Op.NOT);
+            	} else if (tz.findKeyword() == JTokenz.keywords.FALSE || tz.findKeyword() == JTokenz.keywords.NULL)
+            		writer.writePush(Seg.CONST,0);
+            	else if (tz.findKeyword() == JTokenz.keywords.THIS)
+            		writer.writePush(Seg.POINTER,0);                  
             }else if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == '('){
-                writer.print("<symbol> ( </symbol>\n");
-                tokenWriter.print("<symbol> ( </symbol>\n");
                 compileExpression();
                 doSymbol(')');
             }else if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && (tz.sym() == '-' || tz.sym() == '~')){
-                writer.print("<symbol> " + tz.sym() + " </symbol>\n");
-                tokenWriter.print("<symbol> " + tz.sym() + " </symbol>\n");
+            	char s = tz.sym();
                 compileTerm();
+                if (s == '-')
+                    writer.writeArithmetic(VMW.Op.NEG);
+                else
+                    writer.writeArithmetic(VMW.Op.NOT);
             }
         }
-        writer.print("</term>\n");
+        
     }
     
     private void compileSubroutineCall(){
         tz.advance();
-        writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
-        tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
-
+        String name = tz.identifier();
+        int nArgs = 0;
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == '('){
-            writer.print("<symbol> ( </symbol>\n");
-            tokenWriter.print("<symbol> ( </symbol>\n");
-            writer.print("<expressionList>\n");
-            compileExpressionList();
-            writer.print("</expressionList>\n");
+        	writer.writePush(Seg.POINTER,0);
+        	nArgs = compileExpressionList() + 1;
             doSymbol(')');
+            writer.writeCall(currentClass + '.' + name, nArgs);
         }else if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == '.'){
-            writer.print("<symbol> . </symbol>\n");
-            tokenWriter.print("<symbol> . </symbol>\n");
+        	String objName = name;
             tz.advance();
-            writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
-            tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
+            name = tz.identifier();
+            String type = sTable.typeOf(objName);
+            if (type.equals(""))
+                name = objName + "." + name;
+            else {
+                nArgs = 1;
+                writer.writePush(getSeg(sTable.kindOf(objName)), sTable.indexOf(objName));
+                name = sTable.typeOf(objName) + "." + name;
+            }
             doSymbol('(');
-            writer.print("<expressionList>\n");
-            compileExpressionList();
-            writer.print("</expressionList>\n");
+            nArgs += compileExpressionList();
             doSymbol(')');
+            writer.writeCall(name,nArgs);
         }
     }
     
     private void compileExpression(){
-        writer.print("<expression>\n");
-
         compileTerm();
-
         while (true) {
             tz.advance();
             if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.isOperation()){
-                if (tz.sym() == '>'){
-                    writer.print("<symbol> &gt; </symbol>\n");
-                    tokenWriter.print("<symbol> &gt; </symbol>\n");
-                }else if (tz.sym() == '<'){
-                    writer.print("<symbol> &lt; </symbol>\n");
-                    tokenWriter.print("<symbol> &lt; </symbol>\n");
-                }else if (tz.sym() == '&') {
-                    writer.print("<symbol> &amp; </symbol>\n");
-                    tokenWriter.print("<symbol> &amp; </symbol>\n");
-                }else {
-                    writer.print("<symbol> " + tz.sym() + " </symbol>\n");
-                    tokenWriter.print("<symbol> " + tz.sym() + " </symbol>\n");
+            	String maths = "";
+                switch (tz.sym()){
+                    case '+':
+                    	maths = "add";break;
+                    case '-':
+                    	maths = "sub";break;
+                    case '*':
+                    	maths = "call Math.multiply 2";break;
+                    case '/':
+                    	maths = "call Math.divide 2";break;
+                    case '<':
+                    	maths = "lt";break;
+                    case '>':
+                    	maths = "gt";break;
+                    case '=':
+                    	maths = "eq";break;
+                    case '&':
+                    	maths = "and";break;
+                    case '|':
+                    	maths = "or";break;
+                    default:;
                 }
                 compileTerm();
+                writer.writeCommand(maths,"","");
             }else {
                 tz.undo();
                 break;
             }
         }
-        writer.print("</expression>\n");
     }
     
-    private void compileExpressionList(){
+    private int compileExpressionList(){
+    	int n = 0;
         tz.advance();
         if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == ')')
             tz.undo();
         else {
+        	n = 1;
             tz.undo();
             compileExpression();
             while (true) {
                 tz.advance();
                 if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == ','){
-                    writer.print("<symbol> , </symbol>\n");
-                    tokenWriter.print("<symbol> , </symbol>\n");
                     compileExpression();
+                    n++;
                 }else {
                     tz.undo();
                     break;
                 }
             }
         }
+        return n;
     }
     
+    /**
+     * Raise hell if symbol not found (Consumes next symbol)
+     * @param symbol
+     */
     private void doSymbol(char symbol){
         tz.advance();
-        if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() == symbol){
-            writer.print("<symbol> " + symbol + " </symbol>\n");
-            tokenWriter.print("<symbol> " + symbol + " </symbol>\n");
-        }
+        if (tz.getTokenType() == JTokenz.tokenType.SYMBOL && tz.sym() != symbol)
+        	throw new IllegalStateException("Missing Symbol! Expected: " + symbol);
     }
     
     private void compileSubroutine(){
@@ -469,31 +461,38 @@ public class Crawler {
             return;
         }
         
-        writer.print("<subroutineDec>\n");
-        writer.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
-        tokenWriter.print("<keyword> " + tz.getCurrTokenString() + " </keyword>\n");
+        JTokenz.keywords keyword = tz.findKeyword();
+        sTable.startSubroutine();
+
+        //for method this is the first argument
+        if (tz.findKeyword() == JTokenz.keywords.METHOD)
+            sTable.define("this",currentClass, Symbol.type.ARG);
+        //String type = "";
 
         tz.advance();
         
-        if (tz.getTokenType() == JTokenz.tokenType.KEYWORD && tz.findKeyword() == JTokenz.keywords.VOID){
-            writer.print("<keyword> void </keyword>\n");
-            tokenWriter.print("<keyword> void </keyword>\n");
-        } else {
-            tz.undo();
-            compileType();
-        }
+//        if (tz.getTokenType() == JTokenz.tokenType.KEYWORD && tz.findKeyword() == JTokenz.keywords.VOID)
+//            type = "void";
+//        else {
+//            tz.undo();
+//            type = compileType();
+//        }
         
         tz.advance();
-
-        writer.print("<identifier> " + tz.identifier() + " </identifier>\n");
-        tokenWriter.print("<identifier> " + tz.identifier() + " </identifier>\n");
+        currentSubroutine = tz.identifier();
         doSymbol('(');
-        writer.print("<parameterList>\n");
         compileParameterList();
-        writer.print("</parameterList>\n");
         doSymbol(')');
-        compileSubroutineBody();
-        writer.print("</subroutineDec>\n");
+        compileSubroutineBody(keyword);
         compileSubroutine();
+    }
+    
+    /**
+     * @return current function
+     */
+    private String currentFunction(){
+        if (currentClass.length() != 0 && currentSubroutine.length() !=0)
+            return currentClass + "." + currentSubroutine;
+        return "";
     }
 }
